@@ -9,10 +9,11 @@ struct User{
 	struct User_Profile* profile;
 	struct friend* friend;
 	struct User* next;
+	struct Tweet* tweet;
 };
 
 struct User_Profile{
-	char sign_up_date[40];
+	char sign_up_date[50];
 	char screen_name[20];
 };
 
@@ -24,6 +25,42 @@ struct friend{
 void friend_init(struct friend* self)
 {
 	self->next = NULL;
+}
+
+struct Tweet{
+	char tweet_date[50];
+	char word[200];
+	struct Tweet *next;
+};
+
+void Tweet_init(struct Tweet* self)
+{
+	self->next = NULL;
+}
+
+void add_tweet(struct User* list, char self_id[], char tweet_date[], char word[])
+{
+	struct User* user = find_user(list,self_id);
+	if(user == NULL)
+	{
+		return;
+	}
+	
+	struct Tweet* tweet = (struct Tweet*)malloc(sizeof(struct Tweet));
+	Tweet_init(tweet);
+	
+	strcpy(tweet->tweet_date , tweet_date);
+	strcpy(tweet->word, word);
+	
+	if(user->tweet == NULL)
+	{
+		user->tweet = tweet;
+	}
+	else
+	{
+		tweet->next = user->tweet;
+		user->tweet = tweet;
+	}
 }
 
 void add_friend(struct User* list, char self_id[], char friend_id[])
@@ -73,6 +110,7 @@ struct User* alloc_user(){
 	user->profile = user_profile;
 	user->next = NULL;
 	user->friend = NULL;
+	user->tweet = NULL;
 	return user;
 }
 
@@ -115,6 +153,13 @@ void print_user(struct User* list)
 		{
 			printf("%s\n",p->friend);
 		}
+		printf("=======tweet list=========\n");
+		for( ;p->tweet != NULL ; p->tweet = p->tweet->next)
+		{
+			printf("%s",p->tweet->tweet_date);
+			printf("%s",p->tweet->word);
+			printf("\n");
+		}
 		printf("\n");
 		printf("\n");
 	}
@@ -126,10 +171,10 @@ void main()
 {
 	FILE *fa;
 
-	char tstr[50];
+	char tstr[1000];
 	char screen_name[50];
 	char sign_up_date[50];
-	char id[50];
+	char id[10];
 
 	fa = fopen("user.txt","r");
 	
@@ -157,7 +202,7 @@ void main()
 			sscanf(tstr,"%s",screen_name);
 			
 			user_list = insert_user(user_list, id, sign_up_date ,screen_name);
-		}
+		} 
 		
 		num = num + 1;
 			
@@ -170,7 +215,6 @@ void main()
 	num = 0;
 	char my_id[10];
 	char friend_id[10];
-	add_friend(user_list, "491963952", "341312698");
 	
 	while( fgets(tstr,10,fa) != NULL )
 	{
@@ -187,7 +231,35 @@ void main()
 	
 	}
 	
-	print_user(user_list);
 	fclose(fa);
+
+	fa = fopen("word.txt","r");
+	
+	num = 0;
+	char id_tweet[10]; 
+	char tweet_date[40];
+	char word[200]; 
+	
+	while( fgets(tstr,1000,fa) != NULL)
+	{
+		
+		if(num%4 == 0)
+		{	
+			sscanf(tstr,"%s",id_tweet);
+		}
+		else if(num%4 == 1)
+		{	
+			strcpy(tweet_date,tstr);
+		}
+		else if(num%4 == 2)
+		{
+			strcpy(word,tstr);
+			add_tweet(user_list, id_tweet, tweet_date, word);
+			
+		}
+		num = num + 1;
+	}
+	fclose(fa);
+	print_user(user_list);
 	
 }
