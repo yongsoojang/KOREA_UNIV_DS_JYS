@@ -3,15 +3,64 @@
 #include <string.h>
 
 
-//=======================================================================================
+//=====================================================================================
 
+struct HashTable* find_key(struct HashTable* table, int key);
 struct User{
 	char id[10];
 	struct User_Profile* profile;
-	//struct friend* friend;
+	struct friend* friend;
 	struct User* next;
 	//struct Tweet* tweet;
 };
+
+
+struct HashTable{
+	int key;
+	struct HashTable* next;
+	struct User* user;
+};
+
+//=======================================================================================
+struct friend{
+	char friend_id[10];
+	struct friend* next;
+};
+
+void friend_init(struct friend* self)
+{
+	self->next = NULL;
+}
+
+void add_friend(struct HashTable* table, int hash_key, char my_id[] , char friend_id[])
+{
+	struct HashTable* p = find_key(table,hash_key);
+	struct User* user;
+	
+	struct friend * friend = (struct friend*)malloc(sizeof(struct friend));
+	friend_init(friend);
+	sscanf(friend_id, "%s", friend->friend_id);
+	
+	for( user = p->user ; user != NULL ; user = user->next)
+	{
+		if( strcmp(user->id,my_id) == 0 )
+		{
+			if(user->friend == NULL)
+			{
+				user->friend = friend;
+			}
+			else
+			{
+				friend->next = user->friend;
+				user->friend = friend;
+			}
+		}
+	}
+
+
+}
+
+//===================================================================================
 
 struct User_Profile{
 	char sign_up_date[50];
@@ -24,7 +73,7 @@ struct User* alloc_user(){
 	struct User_Profile* user_profile = (struct User_Profile*)malloc(sizeof(struct User_Profile));
 	user->profile = user_profile;
 	user->next = NULL;
-	//user->friend = NULL;
+	user->friend = NULL;
 	//user->tweet = NULL;
 	return user;
 }
@@ -45,12 +94,6 @@ struct User* create_user( char id[], char sign_up_date[], char screen_name[] ){
 
 //====================================================================================================================
 
-struct HashTable{
-	int key;
-	struct HashTable* next;
-	struct User* user;
-};
-
 struct HashTable* alloc_HashTable()
 {
 	struct HashTable* hashtable = (struct HashTable*)malloc(sizeof(struct HashTable));
@@ -67,7 +110,7 @@ struct HashTable* insert_HashTable(struct HashTable* table, int key)
 	return hashtable;
 }
 
-int key_of_HastTable(char id[])
+int key_of_HashTable(char id[])
 {
 	int id_for_hash;
 	int i;
@@ -117,19 +160,33 @@ void add_user_in_HashTable(struct HashTable* key_place,struct User* user)
 //===================================================================================
 
 
+
+
+
+
+
 void print_user(struct HashTable* hashtable) 
 {	
 	struct HashTable *p = hashtable;
-	
+	struct friend* friend;
 	for( ; p != NULL; p= p->next)
 	{
-		printf("Hash Key = %d \n",p->key);
+		printf("Hash Key = %d \n\n",p->key);
 		struct User* q = p->user;
 		for( ; q!= NULL; q=q->next)
 		{
 			printf("%s\n",q->id);	
 			printf("%s",q->profile->sign_up_date);
-			printf("%s\n",q->profile->screen_name);	
+			printf("%s\n\n",q->profile->screen_name);	
+			printf("friend list\n");
+			
+			if(q->friend != NULL)
+			{
+				for(friend = q->friend ; friend != NULL ; friend = friend->next)
+				{
+					printf("%s\n",friend->friend_id);
+				}
+			}
 			printf("\n\n");
 		}
 		printf("==================================\n");
@@ -172,7 +229,7 @@ void main()
 		{
 			id_for_hash = 0;
 			sscanf(tstr,"%s",id);
-			id_for_hash = key_of_HastTable(id);
+			id_for_hash = key_of_HashTable(id);
 		}
 		else if(num%4 == 1)
 		{
@@ -197,5 +254,35 @@ void main()
 		
 	}
 	fclose(fa);
+
+//========================================================================================
+	
+	fa = fopen("friend.txt","r");
+	
+	num = 0;
+	char my_id[10];
+	char friend_id[10];
+	int hash_key_my_id;
+
+	while( fgets(tstr,10,fa) != NULL )
+	{
+		if(num%3 == 0)
+		{	
+			hash_key_my_id = 0;
+			sscanf(tstr,"%s",my_id);
+			hash_key_my_id = key_of_HashTable(my_id);
+		}
+		else if(num%3 == 1)
+		{
+			sscanf(tstr,"%s",friend_id);
+			add_friend(hashtable,hash_key_my_id,my_id,friend_id);
+		}
+		num = num + 1;
+	
+	}
+	
+	fclose(fa);
+
+//===================================================================================================
 	print_user(hashtable);
 }
