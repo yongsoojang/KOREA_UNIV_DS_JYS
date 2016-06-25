@@ -598,7 +598,7 @@ void delete(struct HashTable* Table,char id[])
 
 	if(user != NULL)
 	{	
-		printf("%d %d \n",place->key, user->id_integer);
+		
 		RB_Delete(place,user);
 	}
 }
@@ -1262,33 +1262,82 @@ void Top_5_most_tweeted_users(struct word* word_list)
 }
 
 
-void Find_users_who_tweeted_a_wrod(){}
 void Find_strongly_connected_components(){}
 void Find_shortest_path_from_a_given_user(){}	
 void Find_all_people_who_are_friends_of_the_above_users(){}
 
 void Delete_all_users_who_mentioned_a_word(struct HashTable* Table,struct word* word_list)
 {
+	struct User* u = NULL;
 	char tstr[500];
 	printf("\n\n\n\n\n==================================================\n\n\n\n");
-	printf("지우려는 단어를 입력하시오 : ");
+	printf("삭제 단어를 입력하시오 해당 유저가 삭제됩니다. : ");
 	scanf("%s",tstr);
-	
+	printf("\n\n\n\n");
 	struct word* w = word_list;
+	int a = 0;
 	for( ; w!= NULL; w= w->next)
 	{
 		if(strstr( w->word, tstr ) != NULL)
 		{
-			printf("삭제하는 ID : %s \n", w->id);
-			printf("내용       : %s", w->word);
-			if(char_to_int(w->id) == 182350432)
-			{
-				printf("ㅠㅠ.. \n");
+			
+			
+			u = search(Table,w->id);
+			
+			if(u!=NULL)
+			{  
+				a = a + 1;
+				printf("==================================================\n");
+				printf("User ID          : %s\n",u->id);
+				printf("User Screen name : %s\n",u->profile->screen_name);
+				printf("내용              : %s", w->word);
+				printf("==================삭제됩니다========================\n");
+				printf("==================================================\n\n\n");
+				delete(Table,w->id);
 			}
-			delete(Table,w->id);
-			if(char_to_int(w->id) == 182350432)
-				printf("뭐지 .. \n");
+			
 		}
+	}
+	
+	if(a==0)
+	{
+		printf("찾으시는 단어가 존재하지 않습니다. \n\n\n\n");
+	}
+}
+void Find_users_who_tweeted_a_wrod(struct HashTable* Table,struct word* word_list)
+{
+	struct User* u = NULL;
+	char tstr[500];
+	printf("\n\n\n\n\n==================================================\n\n\n\n");
+	printf("찾으려는 단어를 입력하시오 : ");
+	scanf("%s",tstr);
+	printf("\n\n\n\n");
+	struct word* w = word_list;
+	int a = 0;
+	for( ; w!= NULL; w= w->next)
+	{
+		if(strstr( w->word, tstr ) != NULL)
+		{
+			
+			
+			u = search(Table,w->id);
+			
+			if(u!=NULL)
+			{  
+				a = a + 1;
+				printf("==================================================\n");
+				printf("User ID          : %s\n",u->id);
+				printf("User Screen name : %s\n",u->profile->screen_name);
+				printf("내용              : %s", w->word);
+				printf("==================================================\n\n\n");
+			}
+			
+		}
+	}
+	
+	if(a==0)
+	{
+		printf("찾으시는 단어가 존재하지 않습니다. \n\n\n\n");
 	}
 }
 	
@@ -1330,7 +1379,7 @@ void main()
 			case 1 : display_statistics(Table,word_list); continue;
 			case 2 : Top_5_most_tweeted_words(); continue; continue;
 			case 3 : Top_5_most_tweeted_users(word_list); continue;
-			case 4 : Find_users_who_tweeted_a_wrod(); continue;
+			case 4 : Find_users_who_tweeted_a_wrod(Table,word_list); continue;
 			case 5 : Find_all_people_who_are_friends_of_the_above_users(); continue;
 			case 7 : Delete_all_users_who_mentioned_a_word(Table,word_list); continue;
 			case 8 : Find_strongly_connected_components(); continue;
