@@ -175,7 +175,7 @@ struct HashTable* find_HashTable(struct HashTable* table, int key)
 {
 	if(key>=HASH_SIZE)
 	{
-		printf("¹üÀ§¸¦ ³Ñ¾î¼¹½À´Ï´Ù\n");
+		printf("ë²”ìœ„ë¥¼ ë„˜ì–´ì„°ìŠµë‹ˆë‹¤\n");
 		exit(1);
 	}
 	
@@ -643,7 +643,7 @@ struct User* search(struct HashTable* Table, char id[])
 		//printf("parent = %d \n",search_user->parent->id_integer);
 	}
 	else
-		printf("user°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù\n");
+		printf("userê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤\n");
 	
 	return search_user;
 	
@@ -820,7 +820,7 @@ void Read_data_files(struct HashTable *Table, struct word** word_list)
 		{
 			Total_friendship_records = Total_friendship_records + 1;
 			sscanf(tstr,"%s",friend_id);
-			add_following_follower(Table, id, friend_id); // following Ãß°¡ 		
+			add_following_follower(Table, id, friend_id); // following ì¶”ê°€ 		
 		}
 		line = line + 1;
 	}
@@ -1000,7 +1000,7 @@ void display_statistics(struct HashTable* Table,struct word* word_list)
 {
 	int num_of_friend = 0;
 	int total_users = 0;
-	int Minimum_of_friends = 99999; // Å©°Ô Àâ°í down ½ÃÅ°±â
+	int Minimum_of_friends = 99999; // í¬ê²Œ ì¡ê³  down ì‹œí‚¤ê¸°
 	int Maximum_of_friends = 0;
 	struct HashTable* t = Table;
 	for( ; t != NULL; t = t->next)
@@ -1013,7 +1013,7 @@ void display_statistics(struct HashTable* Table,struct word* word_list)
 	printf("Average number of friends: %d \n",num_of_friend/total_users);
 	printf("Maximum number of friends: %d \n",Maximum_of_friends);
 	printf("Minimum number of friends: %d \n",Minimum_of_friends);
-	printf("Àá½Ã¸¸ ±â´Ù·Á ÁÖ¼¼¿ä...\n");
+	printf("ì ì‹œë§Œ ê¸°ë‹¤ë ¤ ì£¼ì„¸ìš”...\n");
 	int total_tweet = 0;	
 	struct word* w = word_list;
 	for( ; w!= NULL; w= w->next)
@@ -1124,7 +1124,7 @@ void heapSort_min(int arr[], int size)
 void Top_5_most_tweeted_users(struct word* word_list)
 {
 	printf("\n\n\n\n\n========================================================\n\n\n");
-	printf("Àá½Ã¸¸ ±â´Ù·Á ÁÖ¼¼¿ä \n\n\n");
+	printf("ì ì‹œë§Œ ê¸°ë‹¤ë ¤ ì£¼ì„¸ìš” \n\n\n");
 
 	struct word* w = word_list;
 	int size=0;
@@ -1159,7 +1159,7 @@ void Top_5_most_tweeted_users(struct word* word_list)
 		}
 	}
 	
-	int num_tweet_per_user[num_tweet_user][3]; //0 Àº id 1Àº °¹¼ö 2´Â ¹è¿­ ³Ñ¹ö
+	int num_tweet_per_user[num_tweet_user][3]; //0 ì€ id 1ì€ ê°¯ìˆ˜ 2ëŠ” ë°°ì—´ ë„˜ë²„
 	int j;
 	int k;
 	for(i=0;i<num_tweet_user;i++)
@@ -1271,7 +1271,7 @@ void Delete_all_users_who_mentioned_a_word(struct HashTable* Table,struct word* 
 	struct User* u = NULL;
 	char tstr[500];
 	printf("\n\n\n\n\n==================================================\n\n\n\n");
-	printf("»èÁ¦ ´Ü¾î¸¦ ÀÔ·ÂÇÏ½Ã¿À ÇØ´ç À¯Àú°¡ »èÁ¦µË´Ï´Ù. : ");
+	printf("ì‚­ì œ ë‹¨ì–´ë¥¼ ì…ë ¥í•˜ì‹œì˜¤ í•´ë‹¹ ìœ ì €ê°€ ì‚­ì œë©ë‹ˆë‹¤. : ");
 	scanf("%s",tstr);
 	printf("\n\n\n\n");
 	struct word* w = word_list;
@@ -1290,8 +1290,8 @@ void Delete_all_users_who_mentioned_a_word(struct HashTable* Table,struct word* 
 				printf("==================================================\n");
 				printf("User ID          : %s\n",u->id);
 				printf("User Screen name : %s\n",u->profile->screen_name);
-				printf("³»¿ë              : %s", w->word);
-				printf("==================»èÁ¦µË´Ï´Ù========================\n");
+				printf("ë‚´ìš©              : %s", w->word);
+				printf("==================ì‚­ì œë©ë‹ˆë‹¤========================\n");
 				printf("==================================================\n\n\n");
 				delete(Table,w->id);
 			}
@@ -1301,7 +1301,7 @@ void Delete_all_users_who_mentioned_a_word(struct HashTable* Table,struct word* 
 	
 	if(a==0)
 	{
-		printf("Ã£À¸½Ã´Â ´Ü¾î°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù. \n\n\n\n");
+		printf("ì°¾ìœ¼ì‹œëŠ” ë‹¨ì–´ê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. \n\n\n\n");
 	}
 }
 void Find_users_who_tweeted_a_wrod(struct HashTable* Table,struct word* word_list)
@@ -1309,7 +1309,7 @@ void Find_users_who_tweeted_a_wrod(struct HashTable* Table,struct word* word_lis
 	struct User* u = NULL;
 	char tstr[500];
 	printf("\n\n\n\n\n==================================================\n\n\n\n");
-	printf("Ã£À¸·Á´Â ´Ü¾î¸¦ ÀÔ·ÂÇÏ½Ã¿À : ");
+	printf("ì°¾ìœ¼ë ¤ëŠ” ë‹¨ì–´ë¥¼ ì…ë ¥í•˜ì‹œì˜¤ : ");
 	scanf("%s",tstr);
 	printf("\n\n\n\n");
 	struct word* w = word_list;
@@ -1328,8 +1328,8 @@ void Find_users_who_tweeted_a_wrod(struct HashTable* Table,struct word* word_lis
 				printf("==================================================\n");
 				printf("User ID          : %s\n",u->id);
 				printf("User Screen name : %s\n",u->profile->screen_name);
-				printf("³»¿ë              : %s", w->word);
-				printf("==================================================\n\n\n");
+				printf("ë‚´ìš©              : %s", w->word);
+				printf("===================================================\n\n\n");
 			}
 			
 		}
@@ -1337,7 +1337,7 @@ void Find_users_who_tweeted_a_wrod(struct HashTable* Table,struct word* word_lis
 	
 	if(a==0)
 	{
-		printf("Ã£À¸½Ã´Â ´Ü¾î°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù. \n\n\n\n");
+		printf("ì°¾ìœ¼ì‹œëŠ” ë‹¨ì–´ê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. \n\n\n\n");
 	}
 }
 	
@@ -1347,7 +1347,7 @@ void main()
 	//====================HashTable=========================
 	int i;
 	struct HashTable* Table = NULL;
-	for(i=0;i<HASH_SIZE;i++) // size¸¸Å­ »ı¼º
+	for(i=0;i<HASH_SIZE;i++) // sizeë§Œí¼ ìƒì„±
 	{
 		Table = insert_HashTable(Table,i);
 	}
@@ -1385,7 +1385,7 @@ void main()
 			case 8 : Find_strongly_connected_components(); continue;
 			case 9 : Find_shortest_path_from_a_given_user(); continue;
 			case 99: exit(1);
-			default: printf("ÇØ´ç ¸Ş´º´Â Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù \n"); continue;
+			default: printf("í•´ë‹¹ ë©”ë‰´ëŠ” ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤ \n"); continue;
 		}
 		
 	}
