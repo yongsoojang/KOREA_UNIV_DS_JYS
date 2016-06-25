@@ -6,7 +6,7 @@
 
 #define RED 0
 #define BLACK 1
-#define HASH_SIZE 100
+#define HASH_SIZE 300
 #define WHITE 2
 #define GRAY 3
 
@@ -17,15 +17,22 @@ struct HashTable{
 	struct User* RBTree;
 };
 
+struct word{
+	char id[20];
+	char tweet_date[50];
+	char word[500];
+	struct word* next;
+};
+
 struct User{
 	int color;
 	char id[10];
 	int id_integer;
 	struct User_Profile* profile;
-
+	struct word* tweet;
 	struct following* following;
 	struct follower* follower;
-
+	
 	struct User* parent;
 	struct User* left;
 	struct User* right;
@@ -33,12 +40,7 @@ struct User{
 	
 };
 
-struct word{
-	char id[20];
-	char tweet_date[50];
-	char word[500];
-	struct word* next;
-};
+
 
 struct following{
 	char following_id[20];
@@ -77,22 +79,49 @@ struct HashTable* insert_HashTable(struct HashTable* table, int key)
 //===================================================================================
 
 int find_key(char id[])
-{
+{	
 	int key_for_hash;
 	int i;
+	key_for_hash = 0;
 	for(i=0;i<strlen(id);i++)
 	{
 		if(i%2==0)
 		{
-			key_for_hash = key_for_hash + (id[i]-48)*10;
+			key_for_hash = key_for_hash + (int)(id[i]-48)*10;
 		}
 		else
 		{
-			key_for_hash = key_for_hash + id[i]-48;
+			key_for_hash = key_for_hash + (int)id[i]-48;
 		}
 	}
-	return (key_for_hash)%HASH_SIZE;
+	return ((key_for_hash)%HASH_SIZE);
 }
+
+
+
+int find_key2(char id[])
+{	
+	int key_for_hash;
+	int i;
+	key_for_hash = 0;
+	
+	for(i=0;i<strlen(id);i++)
+	{
+		if(i%2==0)
+		{
+			key_for_hash = key_for_hash + (int)(id[i]-48)*10;
+		}
+		else
+		{
+			key_for_hash = key_for_hash + (int)id[i]-48;
+		}
+	}
+	
+	return ((key_for_hash)%HASH_SIZE);
+}
+
+
+
 int char_to_int(char id[])
 {
 	int value=0;
@@ -121,7 +150,7 @@ struct User* create_user(char id[], char sign_up_date[], char screen_name[])
 	user->right->parent = user;
 	user->left = create_T_nil();
 	user->left->parent = user;
-	
+	user->tweet = NULL;
 	user->following = NULL;
 	user->follower = NULL;
 	return user;
@@ -139,7 +168,7 @@ struct User* create_T_nil()
 	user->parent = NULL;
 	user->left = NULL;
 	user->right = NULL;
-	
+	user->tweet = NULL;
 	return user;
 }
 struct HashTable* find_HashTable(struct HashTable* table, int key)
@@ -188,7 +217,7 @@ void rotate_right(struct HashTable* Table, struct User *x)
 	y->parent = x->parent;
 	if(x->parent == NULL)
 	{
-		(Table->RBTree) = y;
+		(Table->RBTree) = y; 
 	}
 	else if(x == (x->parent)->right)
 	{
@@ -359,33 +388,47 @@ struct User *sibling(struct User *n)
 }
 
 void RB_Transplant(struct HashTable* T, struct User* u , struct User* v)
-{
+{	
 	
-	if(T->RBTree == u)
+	
+	if(T->RBTree->id_integer == u->id_integer)
 	{
 		T->RBTree = v;
 	}
-	
 	else if(u==u->parent->left)
 	{	
 		u->parent->left = v;
 	}
-	
 	else
-	{
+	{	
 		u->parent->right = v;
 	}
-	v->parent = u->parent;
+	if(v->id_integer != 0)
+		v->parent = u->parent;
 	
 }
 
 struct User* Tree_Minimum(struct User* x)
 {
-	while(x->left !=NULL)
+	struct User* u = NULL;
+	u=x;
+
+	struct User* k;
+	k = NULL;
+
+	
+	while(u->left !=NULL)
 	{
-		x = x->left;
+		
+		
+		k = u;
+
+		u= u->left;
 	}
-	return x->parent;
+
+	
+	
+	return k;
 }
 
 
@@ -458,14 +501,19 @@ void RB_Delete_Fixup(struct HashTable* T,struct User* x)
 	}
 	x->color = BLACK;
 }
-
+void print(struct User* root,int space);
 void RB_Delete(struct HashTable* T, struct User* z)
-{
-	struct User* y = z;
+{	
+	
+	
+
+	struct User* y = NULL;
+	y=z;
 	int y_original_color = y->color;
 	struct User* x = NULL;
 	
-	printf("z %d    z->left  %d  z->right  %d \n",z->id_integer,z->left->id_integer,z->right->id_integer);
+
+
 	if(z->left -> id_integer == 0)
 	{
 		x = z->right;
@@ -478,34 +526,50 @@ void RB_Delete(struct HashTable* T, struct User* z)
 	}
 	else
 	{	
+
 		y = Tree_Minimum(z->right);
+
+		
 		y_original_color = y->color;
 		
 		x = y->right;
 		
+
 		if(y->parent == z)
 		{
 				x->parent = y;
 		}
-		
 		else
 		{	
+			
+
 			RB_Transplant(T,y,y->right);
+			
+
 			y->right = z->right;
+			
 			y->right->parent = y;
 		}
+
+
 		
+
+
 		RB_Transplant(T,z,y);
+		
 		y->left = z->left;
 		y->left->parent = y;
 		y->color = z->color;
 		
 	}
 	
+	
+	/*
 	if(y_original_color == BLACK)
 	{
 		//RB_Delete_Fixup(T,x);
 	}
+	*/
 }
 
 
@@ -513,11 +577,28 @@ struct User* search(struct HashTable* Table, char id[]);
 
 void delete(struct HashTable* Table,char id[])
 {
-	struct User* user = search(Table,id);
-	int key = find_key(id);
-	struct HashTable* place = find_HashTable(Table,key);
+	
+	
+
+	struct User* user = NULL;
+	user = search(Table,id);
+
+	
+	
+	int key ;
+	key = find_key2(id);
+	
+	
+
+
+	struct HashTable* place = NULL;
+	place = find_HashTable(Table,key);
+	
+	
+
 	if(user != NULL)
-	{
+	{	
+		printf("%d %d \n",place->key, user->id_integer);
 		RB_Delete(place,user);
 	}
 }
@@ -562,16 +643,24 @@ struct User* search(struct HashTable* Table, char id[])
 		//printf("parent = %d \n",search_user->parent->id_integer);
 	}
 	else
-		printf("찾는 user가 존재하지 않습니다\n");
+		printf("user가 존재하지 않습니다\n");
 	
 	return search_user;
 	
 }
 int a = 0;
+
+void print_Table(struct HashTable* Table)
+{
+	struct HashTable* t = Table;
+	
+}
 void print(struct User* root,int space)
 {
 	int i;
 	struct User* p = root;
+	
+	
 	if(p != NULL)
 	{
 		if(p->right != NULL)
@@ -582,10 +671,10 @@ void print(struct User* root,int space)
 		
 		for(i=0;i<space;i++)
 		{
-			printf("      ");
+			printf("   ");
 		}
-		printf("%d %d  \n",++a,p->id_integer);
 		
+		printf(" %d \n", p->id_integer);
 		
 	
 		if(p->left != NULL)
@@ -650,7 +739,29 @@ struct word** insert_word_in_word_list(struct word** word_list,char id[],char tw
 	return word_list;
 }
 
-
+void insert_tweet_in_tree(struct HashTable* Table,char id[],char tweet_date[],char word[])
+{
+	struct word* tweet = (struct word*)malloc(sizeof(struct word));
+	sscanf(id,"%s",tweet->id);
+	strcpy(tweet->tweet_date,tweet_date);
+	strcpy(tweet->word,word);
+	
+	struct User* u = search(Table,id);
+	
+	if(u != NULL)
+	{
+		if(u->tweet == NULL)
+		{
+			u->tweet = tweet;
+		}
+		else
+		{
+			tweet->next = u->tweet;
+			u->tweet = tweet;
+		}
+	}
+	
+}
 
 void Read_data_files(struct HashTable *Table, struct word** word_list)
 {	
@@ -733,7 +844,8 @@ void Read_data_files(struct HashTable *Table, struct word** word_list)
 		{
 			Total_tweets = Total_tweets + 1;
 			strcpy(word,tstr);
-			word_list = insert_word_in_word_list(word_list,id,tweet_date,word);	
+			word_list = insert_word_in_word_list(word_list,id,tweet_date,word);
+			insert_tweet_in_tree(Table,id,tweet_date,word);	
 		}
 		line = line+1;
 	}
@@ -830,6 +942,60 @@ void heapSort(int arr[], int size)
 	}
 }
 
+void heapify_3(int arr[7087][3], int size)
+{
+	int i,j,tmp_0,tmp_1,tmp_2;
+	
+	for(i=1 ; i < size ; i++)
+	{
+		j = i;
+		
+		while( j != 0 )
+		{
+			if( arr[ (j-1)/2 ][1] > arr[j][1] )
+			{
+				tmp_0 = arr[j][0];
+				tmp_1 = arr[j][1];
+				tmp_2 = arr[j][2];
+	
+				arr[j][0] = arr[ (j-1)/2 ][0] ;
+				arr[j][1] = arr[ (j-1)/2 ][1] ;
+				arr[j][2] = arr[ (j-1)/2 ][2] ;
+
+				arr[ (j-1)/2 ][0] = tmp_0;
+				arr[ (j-1)/2 ][1] = tmp_1;
+				arr[ (j-1)/2 ][2] = tmp_2;				
+			}
+			
+			j = (j-1)/2;
+		}
+	}
+}
+
+
+void heapSort_3(int arr[7087][3], int size)
+{
+	int i, tmp_0, tmp_1, tmp_2;
+	heapify_3(arr,size);
+	for(i=size-1;i>0;i--)
+	{	
+		tmp_0 = arr[i][0];
+		tmp_1 = arr[i][1];
+		tmp_2 = arr[i][2];
+
+
+		arr[i][0] = arr[0][0];
+		arr[i][1] = arr[0][1];
+		arr[i][2] = arr[0][2];
+
+		arr[0][0] = tmp_0;
+		arr[0][1] = tmp_1;
+		arr[0][2] = tmp_2;
+	
+		heapify_3(arr,i);
+	}
+}
+
 void display_statistics(struct HashTable* Table,struct word* word_list)
 {
 	int num_of_friend = 0;
@@ -916,10 +1082,216 @@ void display_statistics(struct HashTable* Table,struct word* word_list)
 	
 }
 void Top_5_most_tweeted_words(){}
-void Top_5_most_tweeted_users(){}
+
+void heapify_min(int arr[], int size)
+{
+	int i,j,tmp;
+	
+	for(i=1 ; i < size ; i++)
+	{
+		j = i;
+		
+		while( j != 0 )
+		{
+			if( arr[ (j-1)/2 ] < arr[j] )
+			{
+				tmp = arr[j];
+				arr[j] = arr[ (j-1)/2 ] ;
+				arr[ (j-1)/2 ] = tmp;
+			}
+			
+			j = (j-1)/2;
+		}
+	}
+}
+
+
+void heapSort_min(int arr[], int size)
+{
+	int i, tmp;
+	heapify(arr,size);
+	for(i=size-1;i>0;i--)
+	{
+		tmp = arr[i];
+		arr[i] = arr[0];
+		arr[0] = tmp;
+		heapify_min(arr,i);
+	}
+}
+
+
+
+void Top_5_most_tweeted_users(struct word* word_list)
+{
+	printf("\n\n\n\n\n========================================================\n\n\n");
+	printf("잠시만 기다려 주세요 \n\n\n");
+
+	struct word* w = word_list;
+	int size=0;
+	for( ;w!= NULL; w= w->next)
+		size = size + 1;
+	
+	int arr[size];
+	int i;
+	for(i=0;i<size;i++)
+	{
+		arr[i] = 0;
+	}
+	
+	w = word_list;
+	i=0;
+	for(;w!=NULL;w=w->next)
+	{
+		arr[i] = char_to_int(w->id);
+		i = i + 1;
+	}
+	heapSort(arr,size);
+	
+	int num_tweet_user = 1;
+	i=1;	
+	int before_num = arr[0];
+	for(i=0;i<size;i++)
+	{
+		if(arr[i] != before_num)
+		{
+			before_num = arr[i];
+			num_tweet_user = num_tweet_user + 1;
+		}
+	}
+	
+	int num_tweet_per_user[num_tweet_user][3]; //0 은 id 1은 갯수 2는 배열 넘버
+	int j;
+	int k;
+	for(i=0;i<num_tweet_user;i++)
+	{
+		num_tweet_per_user[i][0] = 0;
+		num_tweet_per_user[i][1] = 0;
+		num_tweet_per_user[i][2] = i;
+	}	
+	
+	before_num = arr[0];
+	int num_tweet = 0;
+	int user_id = arr[0];
+	
+	num_tweet_per_user[0][0] = user_id;
+	j = 0;
+	for(i=0;i<size;i++)
+	{	
+		if(arr[i] != before_num)
+		{	
+			num_tweet_per_user[j][0] = before_num;
+			num_tweet_per_user[j][1] = num_tweet;	
+			before_num = arr[i];
+			j = j + 1;
+			num_tweet = 1;
+		}
+		else
+		{
+			num_tweet = num_tweet + 1 ;
+		}	
+	}
+	/*
+	for(i=0;i<num_tweet_user;i++)
+	{
+		
+		printf("user id = %d , tweet num = %d  array_num = %d\n",num_tweet_per_user[i][0],num_tweet_per_user[i][1],num_tweet_per_user[i][2]);
+		
+	}
+	*/
+	heapSort_3(num_tweet_per_user, 7087);
+	/*
+	printf("======================================================================\n\n");
+	
+	for(i=0;i<num_tweet_user;i++)
+	{
+		
+		printf("user id = %d , tweet num = %d  array_num = %d\n",num_tweet_per_user[i][0],num_tweet_per_user[i][1],num_tweet_per_user[i][2]);
+		
+	}
+	*/
+	
+	int tweet_number[5];
+	for(i=0;i<5;i++)
+	{
+		tweet_number[i] = -1;
+	}
+	
+	for(i=0;i<num_tweet_user;i++)
+	{
+		int tmp_num = num_tweet_per_user[i][1];
+		int p=0;
+		
+		for(j=0;j<5;j++)
+		{
+			if(tweet_number[j] == tmp_num)
+				break;
+		}
+		for(j=0;j<5;j++)
+		{
+			if(tweet_number[j] == -1)
+			{
+				tweet_number[j] = tmp_num;
+				break;
+			}
+		}
+		for(j=0;j<5;j++)
+		{
+			if(tweet_number[j] == -1)
+				p = p + 1;
+		}
+		if(p==0)
+			break;
+	}
+	
+	for(i=0;i<num_tweet_user;i++)
+	{
+		if(tweet_number[0] == num_tweet_per_user[i][1])
+			printf("Rank 1. ID: %d  Tweet number: %d\n\n\n",num_tweet_per_user[i][0],num_tweet_per_user[i][1]);
+		else if(tweet_number[1] == num_tweet_per_user[i][1])
+			printf("Rank 2. ID: %d  Tweet number: %d\n\n\n",num_tweet_per_user[i][0],num_tweet_per_user[i][1]);
+		else if(tweet_number[2] == num_tweet_per_user[i][1])
+			printf("Rank 3. ID: %d  Tweet number: %d\n\n\n",num_tweet_per_user[i][0],num_tweet_per_user[i][1]);
+		else if(tweet_number[3] == num_tweet_per_user[i][1])
+			printf("Rank 4. ID: %d  Tweet number: %d\n\n\n",num_tweet_per_user[i][0],num_tweet_per_user[i][1]);
+		else if(tweet_number[4] == num_tweet_per_user[i][1])
+			printf("Rank 5. ID: %d  Tweet number: %d\n\n\n",num_tweet_per_user[i][0],num_tweet_per_user[i][1]);
+		else
+			break;
+	}
+	printf("\n\n=========================================================\n\n");
+}
+
+
 void Find_users_who_tweeted_a_wrod(){}
 void Find_strongly_connected_components(){}
-void Find_shortest_path_from_a_given_user(){}			
+void Find_shortest_path_from_a_given_user(){}	
+void Find_all_people_who_are_friends_of_the_above_users(){}
+
+void Delete_all_users_who_mentioned_a_word(struct HashTable* Table,struct word* word_list)
+{
+	char tstr[500];
+	printf("\n\n\n\n\n==================================================\n\n\n\n");
+	printf("지우려는 단어를 입력하시오 : ");
+	scanf("%s",tstr);
+	
+	struct word* w = word_list;
+	for( ; w!= NULL; w= w->next)
+	{
+		if(strstr( w->word, tstr ) != NULL)
+		{
+			printf("삭제하는 ID : %s \n", w->id);
+			printf("내용       : %s", w->word);
+			if(char_to_int(w->id) == 182350432)
+			{
+				printf("ㅠㅠ.. \n");
+			}
+			delete(Table,w->id);
+			if(char_to_int(w->id) == 182350432)
+				printf("뭐지 .. \n");
+		}
+	}
+}
+	
 void main()
 {
 	
@@ -956,11 +1328,15 @@ void main()
 		{
 			case 0 : Read_data_files(Table,&word_list); continue;
 			case 1 : display_statistics(Table,word_list); continue;
-			case 2 : Top_5_most_tweeted_words(); continue;
-			case 3 : Top_5_most_tweeted_users(); continue;
+			case 2 : Top_5_most_tweeted_words(); continue; continue;
+			case 3 : Top_5_most_tweeted_users(word_list); continue;
 			case 4 : Find_users_who_tweeted_a_wrod(); continue;
+			case 5 : Find_all_people_who_are_friends_of_the_above_users(); continue;
+			case 7 : Delete_all_users_who_mentioned_a_word(Table,word_list); continue;
 			case 8 : Find_strongly_connected_components(); continue;
+			case 9 : Find_shortest_path_from_a_given_user(); continue;
 			case 99: exit(1);
+			default: printf("해당 메뉴는 존재하지 않습니다 \n"); continue;
 		}
 		
 	}
